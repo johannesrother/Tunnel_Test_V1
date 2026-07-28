@@ -256,10 +256,7 @@ export class OrganicTunnel {
       return;
     }
     this.root.setEnabled(true);
-    // The release begins as a physical exit: fog and light dissolve while the
-    // camera is pulled beyond the final ring, then the shell vanishes in white.
-    const visibility = frame.isWhiteTransition ? 1 - frame.whiteTransitionProgress : 1;
-    this.fadeMeshes.forEach((mesh) => { mesh.visibility = visibility; });
+    this.fadeMeshes.forEach((mesh) => { mesh.visibility = 1; });
     const pulse = Math.max(0, Math.sin(frame.elapsed * (1.1 + frame.stage.rhythm * 4)));
     const intensity = frame.stage.light * (0.16 + pulse * frame.stage.rhythm * 0.34);
     this.lightRibbons.material.emissiveColor.set(
