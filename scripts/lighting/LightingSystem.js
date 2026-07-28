@@ -45,22 +45,19 @@ export class LightingSystem {
 
     this.ambient.setEnabled(true);
     this.practicals.forEach((light) => light.setEnabled(true));
-    const release = frame.isWhiteTransition ? frame.whiteTransitionProgress : 0;
-    const baseFog = frame.isWhiteTransition ? 0.065 : frame.stage.fog;
-    const baseLight = frame.isWhiteTransition ? 0.12 : frame.stage.light;
     this.scene.clearColor.set(
-      0.045 + (1 - 0.045) * release,
-      0.066 + (1 - 0.066) * release,
-      0.042 + (1 - 0.042) * release,
+      0.045,
+      0.066,
+      0.042,
       1,
     );
-    this.scene.fogDensity = baseFog * (1 - release);
-    this.ambient.intensity = Math.max(0, baseLight * 0.34 * (1 - release));
+    this.scene.fogDensity = frame.stage.fog;
+    this.ambient.intensity = Math.max(0.05, frame.stage.light * 0.34);
 
-    const flickerAmount = frame.stage.id === "calm" || frame.stage.id === "crawl" || frame.isWhiteTransition
+    const flickerAmount = frame.stage.id === "calm" || frame.stage.id === "crawl"
       ? 0
       : Math.max(0, Math.sin(frame.elapsed * (7 + frame.stage.rhythm * 2)));
-    const intensity = baseLight * (1.15 + flickerAmount * 0.92) * (1 - release);
+    const intensity = frame.stage.light * (1.15 + flickerAmount * 0.92);
     const radius = frame.tunnelProfile.diameter / 2;
     const lateral = radius * 0.76;
     const ceiling = 1.68 + radius * 0.72;
