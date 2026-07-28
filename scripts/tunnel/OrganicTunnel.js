@@ -24,6 +24,20 @@ function createLimestoneAlbedo(scene) {
   return texture;
 }
 
+function createLimestoneNormal(scene) {
+  const texture = new BABYLON.Texture(
+    "./assets/textures/limestone-normal-v1.png", scene, false, false,
+    BABYLON.Texture.TRILINEAR_SAMPLINGMODE,
+  );
+  texture.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
+  texture.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
+  texture.uScale = 0.84;
+  texture.vScale = 0.84;
+  texture.anisotropicFilteringLevel = 4;
+  texture.level = 0.46;
+  return texture;
+}
+
 function buildStrip(name, scene, centerAngle, angularSpan, inset, material) {
   const positions = [];
   const indices = [];
@@ -104,10 +118,12 @@ export class OrganicTunnel {
   #createShellMaterial() {
     const material = new BABYLON.PBRMaterial("living-limestone", this.scene);
     this.surfaceTexture = createLimestoneAlbedo(this.scene);
+    this.surfaceNormal = createLimestoneNormal(this.scene);
     material.albedoColor = BABYLON.Color3.FromHexString("#e7e2c8");
     material.albedoTexture = this.surfaceTexture;
-    material.metallic = 0.12;
-    material.roughness = 0.58;
+    material.bumpTexture = this.surfaceNormal;
+    material.metallic = 0;
+    material.roughness = 0.66;
     material.usePhysicalLightFalloff = true;
     material.backFaceCulling = false;
     material.twoSidedLighting = true;
