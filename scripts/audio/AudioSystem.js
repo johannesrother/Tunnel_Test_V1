@@ -1,5 +1,11 @@
 const PIANO_NOTES = Object.freeze([57, 60, 64, 67, 64, 60, 55, 62]);
-const BIRD_NOTES = Object.freeze([81, 84, 79, 86]);
+const BIRD_PHRASES = Object.freeze([
+  Object.freeze([{ note: 81, offset: 0, duration: 0.17, bend: 5 }, { note: 85, offset: 0.19, duration: 0.24, bend: 3 }]),
+  Object.freeze([{ note: 78, offset: 0, duration: 0.22, bend: 4 }, { note: 82, offset: 0.31, duration: 0.17, bend: 6 }]),
+  Object.freeze([{ note: 86, offset: 0, duration: 0.13, bend: 2 }, { note: 83, offset: 0.16, duration: 0.19, bend: 5 }, { note: 80, offset: 0.4, duration: 0.17, bend: 3 }]),
+  Object.freeze([{ note: 76, offset: 0, duration: 0.25, bend: 6 }]),
+]);
+const BIRD_INTERVALS = Object.freeze([2.65, 3.82, 2.34, 4.18]);
 
 function midiToFrequency(midiNote) {
   return 440 * Math.pow(2, (midiNote - 69) / 12);
@@ -175,19 +181,28 @@ export class AudioSystem {
     overtone.stop(time + duration + 0.05);
   }
 
-  #playBird(time, midiNote, level) {
+  #playBird(time, midiNote, level, duration, bend) {
     const oscillator = this.context.createOscillator();
     const gain = this.context.createGain();
-    const duration = 0.23;
+    const filter = this.context.createBiquadFilter();
     oscillator.type = "sine";
     oscillator.frequency.setValueAtTime(midiToFrequency(midiNote), time);
-    oscillator.frequency.exponentialRampToValueAtTime(midiToFrequency(midiNote + 5), time + duration);
+    oscillator.frequency.exponentialRampToValueAtTime(midiToFrequency(midiNote + bend), time + duration);
+    filter.type = "bandpass";
+    filter.frequency.setValueAtTime(2850, time);
+    filter.Q.value = 2.1;
     gain.gain.setValueAtTime(0.0001, time);
-    gain.gain.linearRampToValueAtTime(level, time + 0.035);
+    gain.gain.linearRampToValueAtTime(level, time + Math.min(0.035, duration * 0.28));
     gain.gain.exponentialRampToValueAtTime(0.0001, time + duration);
-    oscillator.connect(gain).connect(this.buses.nature);
+    oscillator.connect(filter).connect(gain).connect(this.buses.nature);
     oscillator.start(time);
     oscillator.stop(time + duration + 0.04);
+  }
+
+  #playBirdPhrase(time, phrase, level) {
+    phrase.forEach(({ note, offset, duration, bend }, noteIndex) => {
+      this.#playBird(time + offset, note, level * (1 - noteIndex * 0.12), duration, bend);
+    });
   }
 
   #scheduleComfortDetails(frame, now) {
@@ -203,12 +218,17 @@ export class AudioSystem {
       }
     }
 
-    if (frame.stage.id === "calm") {
+    const birdFade = frame.stage.id === "calm"
+      ? 1
+      : frame.stage.id === "unease"
+        ? 1 - frame.stageProgress * frame.stageProgress * (3 - 2 * frame.stageProgress)
+        : 0;
+    if (birdFade > 0.002) {
       while (this.nextBirdAt <= now + 0.12) {
-        const note = BIRD_NOTES[this.birdIndex % BIRD_NOTES.length];
-        this.#playBird(this.nextBirdAt, note, 0.016);
+        const phraseIndex = this.birdIndex % BIRD_PHRASES.length;
+        this.#playBirdPhrase(this.nextBirdAt, BIRD_PHRASES[phraseIndex], 0.018 * birdFade);
         this.birdIndex += 1;
-        this.nextBirdAt += 3.4;
+        this.nextBirdAt += BIRD_INTERVALS[phraseIndex];
       }
     }
   }
@@ -221,11 +241,11 @@ export class AudioSystem {
     const progress = frame.stageProgress;
     switch (frame.stage.id) {
       case "calm":
-        return { comfort: 0.2, nature: 0.11, tension: 0, pulse: 0, breath: 0, peak: 0 };
+        return { comfort: 0.24, nature: 0.14, tension: 0, pulse: 0, breath: 0, peak: 0 };
       case "unease":
         return {
-          comfort: 0.18 - progress * 0.07,
-          nature: 0.07 - progress * 0.035,
+          comfort: 0.2 - progress * 0.09,
+          nature: 0.105 - progress * 0.09,
           tension: 0.018 + progress * 0.028,
           pulse: progress * 0.012,
           breath: 0.004 + progress * 0.008,
