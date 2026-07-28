@@ -5,7 +5,6 @@ import { WhiteRoomPortal } from "../effects/WhiteRoomPortal.js";
 import { LightingSystem } from "../lighting/LightingSystem.js";
 import { ExperienceTimeline } from "../timeline/ExperienceTimeline.js";
 import { OrganicTunnel } from "../tunnel/OrganicTunnel.js";
-import { VideoWallSystem } from "../video/VideoWallSystem.js";
 import { WebXRSystem } from "./WebXRSystem.js";
 
 /** Application composition root; feature systems do not depend on page UI. */
@@ -39,8 +38,7 @@ export class ExperienceApp {
     this.scene.environmentIntensity = 0.28;
 
     this.camera = new AutoRailCamera(this.scene, this.canvas);
-    this.videoWalls = new VideoWallSystem(this.scene);
-    this.tunnel = new OrganicTunnel(this.scene, this.videoWalls);
+    this.tunnel = new OrganicTunnel(this.scene);
     this.calmNature = new CalmNatureSystem(this.scene);
     this.whiteRoomPortal = new WhiteRoomPortal(this.scene);
     this.lighting = new LightingSystem(this.scene);
@@ -59,7 +57,7 @@ export class ExperienceApp {
     this.timeline.start();
     // Start permission-gated operations in the original click task. WebXR
     // session requests may be rejected if delayed behind an unrelated await.
-    await Promise.all([this.audio.unlock(), this.videoWalls.unlock(), this.xr.enter()]);
+    await Promise.all([this.audio.unlock(), this.xr.enter()]);
   }
 
   #render() {
@@ -69,7 +67,6 @@ export class ExperienceApp {
       this.tunnel.update(frame);
       this.calmNature.update(frame);
       this.whiteRoomPortal.update(frame);
-      this.videoWalls.update(frame);
       this.lighting.update(frame);
       this.audio.update(frame);
       this.onWhiteFade(frame.whiteFadeProgress);
