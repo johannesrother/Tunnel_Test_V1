@@ -4,7 +4,11 @@ const canvas = document.querySelector("#experience-canvas");
 const entry = document.querySelector("#entry-gate");
 const beginButton = document.querySelector("#begin-button");
 const ending = document.querySelector("#ending");
-const app = new ExperienceApp(canvas, () => ending.classList.add("is-visible"));
+const app = new ExperienceApp(
+  canvas,
+  () => ending.classList.add("is-visible"),
+  (progress) => { ending.style.opacity = progress.toFixed(3); },
+);
 const initialization = app.initialize();
 
 beginButton.addEventListener("click", async () => {
