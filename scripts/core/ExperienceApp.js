@@ -31,6 +31,12 @@ export class ExperienceApp {
     this.scene.autoClear = true;
     this.scene.imageProcessingConfiguration.contrast = 1.12;
     this.scene.imageProcessingConfiguration.exposure = 0.9;
+    // A compact prefiltered studio environment gives the mineral PBR surface
+    // real grazing-angle response without adding real-time reflection probes.
+    this.scene.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData(
+      "https://assets.babylonjs.com/environments/environmentSpecular.env", this.scene,
+    );
+    this.scene.environmentIntensity = 0.28;
 
     this.camera = new AutoRailCamera(this.scene, this.canvas);
     this.videoWalls = new VideoWallSystem(this.scene);
