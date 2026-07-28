@@ -1,6 +1,10 @@
 import { getTunnelProfileAt, TUNNEL_CONFIG } from "../core/config.js";
 import { signedPower, smoothstep } from "../utils/math.js";
 
+const NATURE_LENGTH_METRES = 42;
+const NATURE_BANDS = [3.98, 5.44];
+const NATURE_ANGULAR_SPAN = 0.44;
+
 function profilePoint(distance, angle, inset = 0) {
   const profile = getTunnelProfileAt(distance);
   const exponent = 2 / profile.roundness;
@@ -12,109 +16,99 @@ function profilePoint(distance, angle, inset = 0) {
   );
 }
 
-function buildMossField(scene, root) {
+function createNatureAlbedo(scene) {
+  const texture = new BABYLON.Texture(
+    "./assets/textures/calm-nature-limestone-v1.png", scene, false, false,
+    BABYLON.Texture.TRILINEAR_SAMPLINGMODE,
+  );
+  texture.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
+  texture.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
+  texture.uScale = 1.6;
+  texture.vScale = 5.6;
+  texture.anisotropicFilteringLevel = 4;
+  return texture;
+}
+
+function createSurfaceNormal(scene) {
+  const texture = new BABYLON.Texture(
+    "./assets/textures/limestone-normal-v1.png", scene, false, false,
+    BABYLON.Texture.TRILINEAR_SAMPLINGMODE,
+  );
+  texture.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
+  texture.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
+  texture.uScale = 1.6;
+  texture.vScale = 5.6;
+  texture.level = 0.24;
+  texture.anisotropicFilteringLevel = 4;
+  return texture;
+}
+
+function buildNaturalInset(scene, root, name, centerAngle, albedo, normal) {
   const positions = [];
   const indices = [];
-  let offset = 0;
+  const uvs = [];
+  const rings = Math.ceil(NATURE_LENGTH_METRES / TUNNEL_CONFIG.ringSpacing) + 1;
+  const across = 7;
 
-  // A single mesh carries all of the small, lower-edge patches. The values are
-  // authored rather than random, so the composition stays calm and repeatable.
-  for (let index = 0; index < 24; index += 1) {
-    const distance = 3 + index * 1.52;
-    const angle = index % 2 === 0 ? 3.98 : 5.45;
-    const point = profilePoint(distance, angle, 0.028);
-    const halfWidth = 0.11 + (index % 4) * 0.026;
-    const halfLength = 0.15 + (index % 3) * 0.045;
-    const tangentX = -Math.sin(angle) * halfWidth;
-    const tangentY = Math.cos(angle) * halfWidth;
-    positions.push(
-      point.x - tangentX, point.y - tangentY, point.z - halfLength,
-      point.x + tangentX, point.y + tangentY, point.z - halfLength,
-      point.x + tangentX, point.y + tangentY, point.z + halfLength,
-      point.x - tangentX, point.y - tangentY, point.z + halfLength,
-    );
-    indices.push(offset, offset + 1, offset + 2, offset, offset + 2, offset + 3);
-    offset += 4;
+  for (let ring = 0; ring < rings; ring += 1) {
+    const distance = Math.min(ring * TUNNEL_CONFIG.ringSpacing, NATURE_LENGTH_METRES);
+    for (let column = 0; column < across; column += 1) {
+      const lateral = column / (across - 1) - 0.5;
+      const point = profilePoint(distance, centerAngle + lateral * NATURE_ANGULAR_SPAN, 0.034);
+      positions.push(point.x, point.y, point.z);
+      uvs.push(column / (across - 1), distance / 7.5);
+    }
   }
 
-  const moss = new BABYLON.Mesh("calm-moss-patches", scene);
+  for (let ring = 0; ring < rings - 1; ring += 1) {
+    for (let column = 0; column < across - 1; column += 1) {
+      const a = ring * across + column;
+      const b = a + 1;
+      const c = (ring + 1) * across + column;
+      const d = c + 1;
+      indices.push(a, b, c, b, d, c);
+    }
+  }
+
+  const mesh = new BABYLON.Mesh(name, scene);
   const data = new BABYLON.VertexData();
   data.positions = positions;
   data.indices = indices;
+  data.uvs = uvs;
   data.normals = [];
   BABYLON.VertexData.ComputeNormals(positions, indices, data.normals);
-  data.applyToMesh(moss);
-  moss.parent = root;
-  moss.isPickable = false;
+  data.applyToMesh(mesh);
+  mesh.parent = root;
+  mesh.isPickable = false;
 
-  const material = new BABYLON.StandardMaterial("calm-moss-material", scene);
-  material.diffuseColor = BABYLON.Color3.FromHexString("#4e7641");
-  material.emissiveColor = BABYLON.Color3.FromHexString("#12250d");
-  material.specularColor = BABYLON.Color3.Black();
-  material.alpha = 0.66;
+  const material = new BABYLON.PBRMaterial(`${name}-material`, scene);
+  material.albedoTexture = albedo;
+  material.bumpTexture = normal;
+  material.metallic = 0;
+  material.roughness = 0.8;
+  material.usePhysicalLightFalloff = true;
+  material.environmentIntensity = 0.2;
   material.backFaceCulling = false;
-  moss.material = material;
-  return { mesh: moss, material };
-}
-
-function buildGrassField(scene, root) {
-  const lines = [];
-  for (let index = 0; index < 48; index += 1) {
-    const distance = 2.4 + index * 0.76;
-    const angle = index % 2 === 0 ? 4.16 : 5.26;
-    const rootPoint = profilePoint(distance, angle, 0.04);
-    const height = 0.09 + (index % 5) * 0.018;
-    const sway = ((index % 7) - 3) * 0.008;
-    lines.push([
-      rootPoint,
-      new BABYLON.Vector3(rootPoint.x + sway, rootPoint.y + height * 0.58, rootPoint.z + 0.018),
-      new BABYLON.Vector3(rootPoint.x + sway * 1.7, rootPoint.y + height, rootPoint.z + 0.048),
-    ]);
-  }
-  const grass = BABYLON.MeshBuilder.CreateLineSystem("calm-grass", { lines }, scene);
-  grass.parent = root;
-  grass.color = BABYLON.Color3.FromHexString("#729b4f");
-  grass.isPickable = false;
-  return grass;
-}
-
-function buildFlowerInstances(scene, root, name, color, startIndex) {
-  const flower = BABYLON.MeshBuilder.CreateSphere(name, { diameter: 0.052, segments: 4 }, scene);
-  flower.parent = root;
-  flower.isPickable = false;
-  const material = new BABYLON.StandardMaterial(`${name}-material`, scene);
-  material.diffuseColor = color;
-  material.emissiveColor = color.scale(0.22);
-  material.specularColor = BABYLON.Color3.Black();
-  flower.material = material;
-
-  const matrix = new BABYLON.Matrix();
-  for (let index = 0; index < 8; index += 1) {
-    const sourceIndex = startIndex + index * 5;
-    const distance = 4.8 + sourceIndex * 0.76;
-    const angle = sourceIndex % 2 === 0 ? 4.16 : 5.26;
-    const point = profilePoint(distance, angle, 0.047);
-    BABYLON.Matrix.TranslationToRef(point.x, point.y + 0.13, point.z + 0.045, matrix);
-    flower.thinInstanceAdd(matrix);
-  }
-  flower.setEnabled(true);
-  return { mesh: flower, material };
+  material.twoSidedLighting = true;
+  material.transparencyMode = BABYLON.PBRMaterial.PBRMATERIAL_ALPHABLEND;
+  material.alpha = 0.9;
+  mesh.material = material;
+  return { mesh, material };
 }
 
 /**
- * Restrained spring-life dressing for the first tunnel section. It uses one
- * moss mesh, one line system, and two instanced flower meshes, keeping the
- * architectural shell dominant and the GPU cost effectively constant.
+ * Photographed nature exists as two nearly flush limestone insets, not as
+ * separate prop geometry. This keeps the tunnel sculptural in VR while the
+ * real moss, lichen and small spring details remain physically plausible.
  */
 export class CalmNatureSystem {
   constructor(scene) {
     this.root = new BABYLON.TransformNode("calm-nature", scene);
-    this.moss = buildMossField(scene, this.root);
-    // Low-poly blades and spheres read as game props in a headset. Keep the
-    // organic hint limited to nearly flush moss until photographed vegetation
-    // cards are authored for the final installation.
-    this.grass = null;
-    this.flowers = [];
+    const albedo = createNatureAlbedo(scene);
+    const normal = createSurfaceNormal(scene);
+    this.insetBands = NATURE_BANDS.map((angle, index) => buildNaturalInset(
+      scene, this.root, `calm-natural-inset-${index}`, angle, albedo, normal,
+    ));
   }
 
   update(frame) {
@@ -127,12 +121,9 @@ export class CalmNatureSystem {
     this.root.setEnabled(visible);
     if (!visible) return;
 
-    this.moss.mesh.visibility = vitality;
-    this.moss.material.alpha = 0.66 * vitality;
-    if (this.grass) this.grass.visibility = vitality;
-    this.flowers.forEach(({ mesh, material }) => {
+    this.insetBands.forEach(({ mesh, material }) => {
       mesh.visibility = vitality;
-      material.alpha = vitality;
+      material.alpha = 0.9 * vitality;
     });
   }
 }
