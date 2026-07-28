@@ -234,6 +234,7 @@ export class OrganicTunnel {
     data.applyToMesh(mesh);
     mesh.material = material;
     mesh.isPickable = false;
+    this.ribMaterial = material;
     return mesh;
   }
 
@@ -257,12 +258,25 @@ export class OrganicTunnel {
     }
     this.root.setEnabled(true);
     this.fadeMeshes.forEach((mesh) => { mesh.visibility = 1; });
+    const morning = frame.stage.id === "calm"
+      ? 1
+      : frame.stage.id === "unease"
+        ? 1 - frame.stageProgress * frame.stageProgress * (3 - 2 * frame.stageProgress)
+        : 0;
+    this.shellMaterial.albedoColor.set(
+      0.39 + morning * 0.18,
+      0.44 + morning * 0.20,
+      0.33 + morning * 0.12,
+    );
+    this.shellMaterial.emissiveColor.set(morning * 0.018, morning * 0.025, morning * 0.01);
+    this.ribMaterial.albedoColor.set(0.15 + morning * 0.13, 0.19 + morning * 0.16, 0.12 + morning * 0.09);
+    this.ribMaterial.emissiveColor.set(morning * 0.012, morning * 0.018, morning * 0.006);
     const pulse = Math.max(0, Math.sin(frame.elapsed * (1.1 + frame.stage.rhythm * 4)));
     const intensity = frame.stage.light * (0.16 + pulse * frame.stage.rhythm * 0.34);
     this.lightRibbons.material.emissiveColor.set(
-      intensity * 0.85,
-      intensity,
-      intensity * 0.55,
+      intensity * 0.85 + morning * 0.17,
+      intensity + morning * 0.12,
+      intensity * 0.55 + morning * 0.035,
     );
   }
 }
