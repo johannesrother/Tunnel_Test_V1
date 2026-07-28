@@ -47,7 +47,7 @@ The video surfaces and slim practical-light ribbons are separate only because th
 
 ### Living architectural response
 
-`OrganicTunnel` keeps its welded shell static in topology, but adds no-allocation material drift, roughness progression, and a sub-centimetre scale response from the master timeline. Calm is stable; later stages breathe slowly, then introduce infrequent, very small contractions. The visitor's camera never receives this motion. Lighting uses the same tension signal for non-periodic practical-light impulses, so the psychological pressure comes from the space rather than locomotion. This avoids horror clichés and protects headset comfort while making the architecture feel subtly alive.
+`OrganicTunnel` uses a project-owned 1254 px photorealistic limestone albedo (`assets/textures/limestone-albedo-v1.png`) on a physically lit PBR material rather than a drawn placeholder texture. It keeps its welded shell static in topology, but adds no-allocation material drift, roughness progression, and a sub-centimetre scale response from the master timeline. Calm is stable; later stages breathe slowly, then introduce infrequent, very small contractions. The visitor's camera never receives this motion. Lighting uses the same tension signal for non-periodic practical-light impulses, so the psychological pressure comes from the space rather than locomotion. This avoids horror clichés and protects headset comfort while making the architecture feel subtly alive.
 
 ### Master timeline
 
