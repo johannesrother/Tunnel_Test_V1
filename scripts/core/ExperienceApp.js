@@ -1,5 +1,6 @@
 import { AudioSystem } from "../audio/AudioSystem.js";
 import { AutoRailCamera } from "../camera/AutoRailCamera.js";
+import { WhiteRoomPortal } from "../effects/WhiteRoomPortal.js";
 import { LightingSystem } from "../lighting/LightingSystem.js";
 import { ExperienceTimeline } from "../timeline/ExperienceTimeline.js";
 import { OrganicTunnel } from "../tunnel/OrganicTunnel.js";
@@ -8,9 +9,10 @@ import { WebXRSystem } from "./WebXRSystem.js";
 
 /** Application composition root; feature systems do not depend on page UI. */
 export class ExperienceApp {
-  constructor(canvas, onComplete) {
+  constructor(canvas, onComplete, onWhiteFade = () => {}) {
     this.canvas = canvas;
     this.onComplete = onComplete;
+    this.onWhiteFade = onWhiteFade;
     this.engine = new BABYLON.Engine(canvas, true, {
       preserveDrawingBuffer: false,
       stencil: false,
@@ -32,6 +34,7 @@ export class ExperienceApp {
     this.camera = new AutoRailCamera(this.scene, this.canvas);
     this.videoWalls = new VideoWallSystem(this.scene);
     this.tunnel = new OrganicTunnel(this.scene, this.videoWalls);
+    this.whiteRoomPortal = new WhiteRoomPortal(this.scene);
     this.lighting = new LightingSystem(this.scene);
     this.audio = new AudioSystem();
     this.xr = new WebXRSystem(this.scene);
@@ -56,9 +59,11 @@ export class ExperienceApp {
       const frame = this.timeline.getFrame();
       this.camera.update(frame.distance);
       this.tunnel.update(frame);
+      this.whiteRoomPortal.update(frame);
       this.videoWalls.update(frame);
       this.lighting.update(frame);
       this.audio.update(frame);
+      this.onWhiteFade(frame.whiteFadeProgress);
       if (frame.isComplete && !this.completed) {
         this.completed = true;
         this.onComplete();
