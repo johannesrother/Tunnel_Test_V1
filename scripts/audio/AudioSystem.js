@@ -75,6 +75,7 @@ export class AudioSystem {
     this.layers = {
       pad: this.#createWarmPad(),
       wind: this.#createNoiseLayer(this.buses.nature, "lowpass", 720, 0.5),
+      leaves: this.#createNoiseLayer(this.buses.nature, "bandpass", 1650, 0.78, 0.14),
       drone: this.#createDrone(),
       pulse: this.#createPulse(),
       breath: this.#createNoiseLayer(this.buses.breath, "bandpass", 210, 1.4),
@@ -112,7 +113,7 @@ export class AudioSystem {
     return { output };
   }
 
-  #createNoiseLayer(destination, filterType, frequency, resonance) {
+  #createNoiseLayer(destination, filterType, frequency, resonance, outputLevel = 0.34) {
     const source = this.context.createBufferSource();
     const filter = this.context.createBiquadFilter();
     const output = this.context.createGain();
@@ -121,7 +122,7 @@ export class AudioSystem {
     filter.type = filterType;
     filter.frequency.value = frequency;
     filter.Q.value = resonance;
-    output.gain.value = 0.34;
+    output.gain.value = outputLevel;
     source.connect(filter).connect(output).connect(destination);
     source.start();
     return { source, filter, output };
