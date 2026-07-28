@@ -1,10 +1,10 @@
 import { AudioSystem } from "../audio/AudioSystem.js";
 import { AutoRailCamera } from "../camera/AutoRailCamera.js";
-import { CalmNatureSystem } from "../effects/CalmNatureSystem.js";
+import { CalmNatureSystem } from "../effects/CalmNatureSystem.js?rev=calm-natural-20260728";
 import { WhiteRoomPortal } from "../effects/WhiteRoomPortal.js";
 import { LightingSystem } from "../lighting/LightingSystem.js";
 import { ExperienceTimeline } from "../timeline/ExperienceTimeline.js";
-import { OrganicTunnel } from "../tunnel/OrganicTunnel.js";
+import { OrganicTunnel } from "../tunnel/OrganicTunnel.js?rev=calm-natural-20260728";
 import { WebXRSystem } from "./WebXRSystem.js";
 
 /** Application composition root; feature systems do not depend on page UI. */
