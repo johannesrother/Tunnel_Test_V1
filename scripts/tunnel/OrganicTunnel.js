@@ -12,17 +12,17 @@ function profilePoint(profile, angle, inset = 0) {
 }
 
 function createOrganicSurfaceTexture(scene) {
-  const texture = new BABYLON.DynamicTexture("organic-concrete-detail", { width: 1024, height: 1024 }, scene, false);
+  const texture = new BABYLON.DynamicTexture("organic-limestone-detail", { width: 1024, height: 1024 }, scene, false);
   const context = texture.getContext();
   const base = context.createLinearGradient(0, 0, 1024, 1024);
-  base.addColorStop(0, "#172117");
-  base.addColorStop(0.46, "#3e4b34");
-  base.addColorStop(1, "#10170f");
+  base.addColorStop(0, "#ebe5ce");
+  base.addColorStop(0.46, "#bcc1aa");
+  base.addColorStop(1, "#ddd7bf");
   context.fillStyle = base;
   context.fillRect(0, 0, 1024, 1024);
 
-  // Fine, repeated contour lines create a damp, layered surface without a
-  // high-resolution bitmap download or a texture lookup per tunnel segment.
+  // Fine mineral contouring suggests cast limestone and naturally formed
+  // sediment without downloading a high-resolution bitmap to the headset.
   for (let line = 0; line < 30; line += 1) {
     const y = line * 35 + 14;
     context.beginPath();
@@ -33,8 +33,8 @@ function createOrganicSurfaceTexture(scene) {
       context.lineTo(x, y + wave);
     }
     context.strokeStyle = line % 4 === 0
-      ? "rgba(202, 213, 156, 0.12)"
-      : "rgba(8, 14, 8, 0.16)";
+      ? "rgba(108, 129, 83, 0.12)"
+      : "rgba(78, 83, 67, 0.10)";
     context.lineWidth = line % 4 === 0 ? 2.2 : 1;
     context.stroke();
   }
@@ -44,8 +44,8 @@ function createOrganicSurfaceTexture(scene) {
     const y = (fleck * 311) % 1024;
     const radius = 0.5 + ((fleck * 17) % 5) * 0.24;
     context.fillStyle = fleck % 3 === 0
-      ? "rgba(206, 214, 169, 0.07)"
-      : "rgba(4, 10, 4, 0.10)";
+      ? "rgba(112, 140, 83, 0.09)"
+      : "rgba(73, 73, 57, 0.075)";
     context.beginPath();
     context.arc(x, y, radius, 0, Math.PI * 2);
     context.fill();
@@ -102,8 +102,8 @@ function buildStrip(name, scene, centerAngle, angularSpan, inset, material) {
 
 /**
  * A single welded, high-roundness loft creates the architecture. The shell
- * remains continuous; the inset ribs are one lightweight decorative mesh that
- * adds the layered, organic cadence of the reference without creating seams.
+ * remains continuous; the inset ribs are one lightweight decorative mesh with
+ * deliberately irregular spacing, avoiding a modular pipe-like cadence.
  */
 export class OrganicTunnel {
   constructor(scene, videoWalls) {
@@ -137,11 +137,12 @@ export class OrganicTunnel {
   }
 
   #createShellMaterial() {
-    const material = new BABYLON.PBRMaterial("moss-concrete", this.scene);
-    material.albedoColor = BABYLON.Color3.FromHexString("#647055");
-    material.albedoTexture = createOrganicSurfaceTexture(this.scene);
+    const material = new BABYLON.PBRMaterial("living-limestone", this.scene);
+    this.surfaceTexture = createOrganicSurfaceTexture(this.scene);
+    material.albedoColor = BABYLON.Color3.FromHexString("#e7e2c8");
+    material.albedoTexture = this.surfaceTexture;
     material.metallic = 0.12;
-    material.roughness = 0.61;
+    material.roughness = 0.58;
     material.backFaceCulling = false;
     material.twoSidedLighting = true;
     material.environmentIntensity = 0.22;
@@ -194,11 +195,15 @@ export class OrganicTunnel {
     const positions = [];
     const indices = [];
     const radialCount = TUNNEL_CONFIG.radialSegments;
-    const ribHalfWidth = 0.18;
     const ribInset = 0.095;
     let vertexOffset = 0;
+    const ribCenters = [
+      5.2, 11.8, 18.9, 25.1, 33.4, 40.2, 48.6, 55.5, 63.1, 71.8,
+      79.4, 88.7, 97.1, 105.2, 115.3, 124.6, 133.1, 143.7, 152.4, 161.9, 170.1,
+    ];
 
-    for (let centerZ = 6; centerZ < TUNNEL_CONFIG.length - 4; centerZ += 6) {
+    ribCenters.forEach((centerZ, ribIndex) => {
+      const ribHalfWidth = 0.11 + (ribIndex % 4) * 0.045;
       const nearProfile = getTunnelProfileAt(centerZ - ribHalfWidth);
       const farProfile = getTunnelProfileAt(centerZ + ribHalfWidth);
       for (let radial = 0; radial < radialCount; radial += 1) {
@@ -215,12 +220,12 @@ export class OrganicTunnel {
         indices.push(a, b, a + 1, b, b + 1, a + 1);
       }
       vertexOffset += radialCount * 2;
-    }
+    });
 
     const material = new BABYLON.PBRMaterial("organic-ribs", this.scene);
     material.albedoColor = BABYLON.Color3.FromHexString("#263020");
     material.metallic = 0.22;
-    material.roughness = 0.42;
+    material.roughness = 0.5;
     material.backFaceCulling = false;
     material.twoSidedLighting = true;
     material.emissiveColor = BABYLON.Color3.FromHexString("#071006");
@@ -263,20 +268,44 @@ export class OrganicTunnel {
       : frame.stage.id === "unease"
         ? 1 - frame.stageProgress * frame.stageProgress * (3 - 2 * frame.stageProgress)
         : 0;
+    const tension = frame.stage.id === "unease"
+      ? 0.12 + frame.stageProgress * 0.12
+      : frame.stage.id === "compression"
+        ? 0.32 + frame.stageProgress * 0.2
+        : frame.stage.id === "acceleration"
+          ? 0.56 + frame.stageProgress * 0.18
+          : frame.stage.id === "peak"
+            ? 0.86
+            : frame.stage.id === "crawl"
+              ? 0.42
+              : 0;
+    // The shell itself, never the camera, performs tiny slow changes in
+    // diameter. Brief higher-frequency contractions are limited to later
+    // stages and read as architectural tension rather than a jump scare.
+    const breath = Math.sin(frame.elapsed * (0.34 + tension * 0.22)) * (0.002 + tension * 0.007);
+    const twitch = Math.pow(Math.max(0, Math.sin(
+      frame.elapsed * (2.13 + tension * 0.47) + Math.sin(frame.elapsed * 0.41) * 1.8,
+    )), 18) * tension * tension * 0.007;
+    this.root.scaling.set(1 + breath - twitch, 1 + breath * 0.78 - twitch * 0.62, 1);
+    this.surfaceTexture.uOffset = (frame.elapsed * (0.0012 + tension * 0.006)) % 1;
+    this.surfaceTexture.vOffset = Math.sin(frame.elapsed * 0.23) * tension * 0.009;
+    this.shellMaterial.roughness = 0.58 + tension * 0.24;
+    this.ribMaterial.roughness = 0.5 + tension * 0.18;
     this.shellMaterial.albedoColor.set(
-      0.39 + morning * 0.18,
-      0.44 + morning * 0.20,
-      0.33 + morning * 0.12,
+      0.23 + morning * 0.69 - tension * 0.06,
+      0.28 + morning * 0.62 - tension * 0.07,
+      0.20 + morning * 0.56 - tension * 0.04,
     );
-    this.shellMaterial.emissiveColor.set(morning * 0.045, morning * 0.06, morning * 0.022);
-    this.ribMaterial.albedoColor.set(0.15 + morning * 0.13, 0.19 + morning * 0.16, 0.12 + morning * 0.09);
-    this.ribMaterial.emissiveColor.set(morning * 0.022, morning * 0.032, morning * 0.01);
+    this.shellMaterial.emissiveColor.set(morning * 0.028, morning * 0.035, morning * 0.012);
+    this.ribMaterial.albedoColor.set(0.12 + morning * 0.48, 0.15 + morning * 0.45, 0.10 + morning * 0.32);
+    this.ribMaterial.emissiveColor.set(morning * 0.012, morning * 0.018, morning * 0.005);
+    this.ribs.visibility = 0.18 + tension * 0.62;
     const pulse = Math.max(0, Math.sin(frame.elapsed * (1.1 + frame.stage.rhythm * 4)));
     const intensity = frame.stage.light * (0.16 + pulse * frame.stage.rhythm * 0.34);
     this.lightRibbons.material.emissiveColor.set(
-      intensity * 0.85 + morning * 0.17,
-      intensity + morning * 0.12,
-      intensity * 0.55 + morning * 0.035,
+      intensity * 0.72 + morning * 0.15 + twitch * 4,
+      intensity * 0.82 + morning * 0.11 + twitch * 4.5,
+      intensity * 0.48 + morning * 0.025 + twitch * 2.2,
     );
   }
 }
