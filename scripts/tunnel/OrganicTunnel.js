@@ -11,51 +11,16 @@ function profilePoint(profile, angle, inset = 0) {
   );
 }
 
-function createOrganicSurfaceTexture(scene) {
-  const texture = new BABYLON.DynamicTexture("organic-limestone-detail", { width: 1024, height: 1024 }, scene, false);
-  const context = texture.getContext();
-  const base = context.createLinearGradient(0, 0, 1024, 1024);
-  base.addColorStop(0, "#ebe5ce");
-  base.addColorStop(0.46, "#bcc1aa");
-  base.addColorStop(1, "#ddd7bf");
-  context.fillStyle = base;
-  context.fillRect(0, 0, 1024, 1024);
-
-  // Fine mineral contouring suggests cast limestone and naturally formed
-  // sediment without downloading a high-resolution bitmap to the headset.
-  for (let line = 0; line < 30; line += 1) {
-    const y = line * 35 + 14;
-    context.beginPath();
-    context.moveTo(-20, y);
-    for (let x = 0; x <= 1050; x += 60) {
-      const wave = Math.sin(x * 0.018 + line * 0.9) * 8
-        + Math.sin(x * 0.047 + line * 0.37) * 4;
-      context.lineTo(x, y + wave);
-    }
-    context.strokeStyle = line % 4 === 0
-      ? "rgba(108, 129, 83, 0.12)"
-      : "rgba(78, 83, 67, 0.10)";
-    context.lineWidth = line % 4 === 0 ? 2.2 : 1;
-    context.stroke();
-  }
-
-  for (let fleck = 0; fleck < 320; fleck += 1) {
-    const x = (fleck * 137) % 1024;
-    const y = (fleck * 311) % 1024;
-    const radius = 0.5 + ((fleck * 17) % 5) * 0.24;
-    context.fillStyle = fleck % 3 === 0
-      ? "rgba(112, 140, 83, 0.09)"
-      : "rgba(73, 73, 57, 0.075)";
-    context.beginPath();
-    context.arc(x, y, radius, 0, Math.PI * 2);
-    context.fill();
-  }
-
+function createLimestoneAlbedo(scene) {
+  const texture = new BABYLON.Texture(
+    "./assets/textures/limestone-albedo-v1.png", scene, false, false,
+    BABYLON.Texture.TRILINEAR_SAMPLINGMODE,
+  );
   texture.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
   texture.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
-  texture.uScale = 0.72;
-  texture.vScale = 0.82;
-  texture.update(false);
+  texture.uScale = 0.84;
+  texture.vScale = 0.84;
+  texture.anisotropicFilteringLevel = 4;
   return texture;
 }
 
@@ -138,11 +103,12 @@ export class OrganicTunnel {
 
   #createShellMaterial() {
     const material = new BABYLON.PBRMaterial("living-limestone", this.scene);
-    this.surfaceTexture = createOrganicSurfaceTexture(this.scene);
+    this.surfaceTexture = createLimestoneAlbedo(this.scene);
     material.albedoColor = BABYLON.Color3.FromHexString("#e7e2c8");
     material.albedoTexture = this.surfaceTexture;
     material.metallic = 0.12;
     material.roughness = 0.58;
+    material.usePhysicalLightFalloff = true;
     material.backFaceCulling = false;
     material.twoSidedLighting = true;
     material.environmentIntensity = 0.22;
