@@ -1,18 +1,17 @@
 import {
   EXPERIENCE_DURATION_SECONDS,
-  getConstantRailDistance,
+  FINAL_ACCELERATION_START_SECONDS,
+  getTunnelRailDistance,
   getTunnelProfileAt,
   STAGES,
-  TUNNEL_CONFIG,
   TUNNEL_TRAVEL_DURATION_SECONDS,
-  WHITE_ROOM_SUCTION_DURATION_SECONDS,
+  WHITE_ROOM_FADE_START_SECONDS,
 } from "../core/config.js";
-import { clamp } from "../utils/math.js";
+import { clamp, smoothstep } from "../utils/math.js";
 
 /**
- * A deterministic master clock. The rail uses a linear position function for
- * the whole tunnel, so the physical locomotion never accelerates or decelerates.
- * Only the deliberately brief White Room release exceeds that fixed velocity.
+ * A deterministic master clock. The rail is steady until its final second,
+ * when a continuous acceleration carries the visitor into the White Room.
  */
 export class ExperienceTimeline {
   constructor() {
@@ -31,17 +30,18 @@ export class ExperienceTimeline {
       : clamp((nowMilliseconds - this.startedAt) / 1000, 0, EXPERIENCE_DURATION_SECONDS);
     const stage = STAGES.find((candidate) => elapsed >= candidate.start && elapsed < candidate.end) || STAGES.at(-1);
     const stageProgress = clamp((elapsed - stage.start) / (stage.end - stage.start), 0, 1);
-    const whiteTransitionProgress = clamp(
-      (elapsed - TUNNEL_TRAVEL_DURATION_SECONDS) / WHITE_ROOM_SUCTION_DURATION_SECONDS,
+    const finalAccelerationProgress = clamp(
+      (elapsed - FINAL_ACCELERATION_START_SECONDS)
+        / (TUNNEL_TRAVEL_DURATION_SECONDS - FINAL_ACCELERATION_START_SECONDS),
       0,
       1,
     );
-    const isWhiteTransition = elapsed >= TUNNEL_TRAVEL_DURATION_SECONDS && whiteTransitionProgress < 1;
-    const isWhiteRoom = elapsed >= TUNNEL_TRAVEL_DURATION_SECONDS + WHITE_ROOM_SUCTION_DURATION_SECONDS;
-    const suction = 1 - Math.pow(1 - whiteTransitionProgress, 4);
-    const distance = isWhiteTransition || isWhiteRoom
-      ? TUNNEL_CONFIG.length + TUNNEL_CONFIG.whiteRoomSuctionDistance * suction
-      : getConstantRailDistance(elapsed);
+    const isFinalAcceleration = elapsed >= FINAL_ACCELERATION_START_SECONDS
+      && elapsed < TUNNEL_TRAVEL_DURATION_SECONDS;
+    const isWhiteRoom = elapsed >= TUNNEL_TRAVEL_DURATION_SECONDS;
+    const whiteRoomElapsed = Math.max(0, elapsed - TUNNEL_TRAVEL_DURATION_SECONDS);
+    const whiteFadeProgress = smoothstep(WHITE_ROOM_FADE_START_SECONDS, EXPERIENCE_DURATION_SECONDS, elapsed);
+    const distance = getTunnelRailDistance(elapsed);
 
     if (elapsed >= EXPERIENCE_DURATION_SECONDS) this.finished = true;
 
@@ -52,9 +52,11 @@ export class ExperienceTimeline {
       stageProgress,
       distance,
       tunnelProfile: getTunnelProfileAt(distance),
-      isWhiteTransition,
-      whiteTransitionProgress,
+      isFinalAcceleration,
+      finalAccelerationProgress,
       isWhiteRoom,
+      whiteRoomElapsed,
+      whiteFadeProgress,
       isComplete: this.finished,
     });
   }
