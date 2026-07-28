@@ -7,9 +7,11 @@ export class LightingSystem {
   constructor(scene) {
     this.scene = scene;
     this.nightClear = new BABYLON.Color3(0.045, 0.066, 0.042);
-    this.springClear = new BABYLON.Color3(0.255, 0.315, 0.19);
+    this.springClear = new BABYLON.Color3(0.44, 0.47, 0.34);
+    this.coldClear = new BABYLON.Color3(0.028, 0.04, 0.055);
     this.nightFog = BABYLON.Color3.FromHexString("#4b5940");
-    this.springFog = BABYLON.Color3.FromHexString("#d5d0a5");
+    this.springFog = BABYLON.Color3.FromHexString("#e5d9b9");
+    this.coldFog = BABYLON.Color3.FromHexString("#202933");
     scene.fogMode = BABYLON.Scene.FOGMODE_EXP2;
     scene.fogColor = this.nightFog.clone();
     scene.fogDensity = 0.012;
@@ -47,6 +49,15 @@ export class LightingSystem {
     return light;
   }
 
+  #tensionFor(frame) {
+    if (frame.stage.id === "unease") return 0.08 + frame.stageProgress * 0.14;
+    if (frame.stage.id === "compression") return 0.28 + frame.stageProgress * 0.22;
+    if (frame.stage.id === "acceleration") return 0.52 + frame.stageProgress * 0.22;
+    if (frame.stage.id === "peak") return 0.88;
+    if (frame.stage.id === "crawl") return 0.48;
+    return 0;
+  }
+
   update(frame) {
     if (frame.isWhiteRoom) {
       this.ambient.setEnabled(false);
@@ -65,14 +76,18 @@ export class LightingSystem {
       : frame.stage.id === "unease"
         ? 1 - frame.stageProgress * frame.stageProgress * (3 - 2 * frame.stageProgress)
         : 0;
-    const clearRed = this.nightClear.r + (this.springClear.r - this.nightClear.r) * morning;
-    const clearGreen = this.nightClear.g + (this.springClear.g - this.nightClear.g) * morning;
-    const clearBlue = this.nightClear.b + (this.springClear.b - this.nightClear.b) * morning;
+    const tension = this.#tensionFor(frame);
+    const baseClearRed = this.nightClear.r + (this.coldClear.r - this.nightClear.r) * tension;
+    const baseClearGreen = this.nightClear.g + (this.coldClear.g - this.nightClear.g) * tension;
+    const baseClearBlue = this.nightClear.b + (this.coldClear.b - this.nightClear.b) * tension;
+    const clearRed = baseClearRed + (this.springClear.r - baseClearRed) * morning;
+    const clearGreen = baseClearGreen + (this.springClear.g - baseClearGreen) * morning;
+    const clearBlue = baseClearBlue + (this.springClear.b - baseClearBlue) * morning;
     this.scene.clearColor.set(clearRed, clearGreen, clearBlue, 1);
     this.scene.fogColor.set(
-      this.nightFog.r + (this.springFog.r - this.nightFog.r) * morning,
-      this.nightFog.g + (this.springFog.g - this.nightFog.g) * morning,
-      this.nightFog.b + (this.springFog.b - this.nightFog.b) * morning,
+      this.nightFog.r + (this.coldFog.r - this.nightFog.r) * tension + (this.springFog.r - this.nightFog.r) * morning,
+      this.nightFog.g + (this.coldFog.g - this.nightFog.g) * tension + (this.springFog.g - this.nightFog.g) * morning,
+      this.nightFog.b + (this.coldFog.b - this.nightFog.b) * tension + (this.springFog.b - this.nightFog.b) * morning,
     );
     this.scene.fogDensity = frame.stage.fog * (1 - morning * 0.27);
     this.ambient.diffuse.set(0.73 + morning * 0.27, 0.78 + morning * 0.16, 0.60 + morning * 0.20);
@@ -87,8 +102,10 @@ export class LightingSystem {
 
     const flickerAmount = frame.stage.id === "calm" || frame.stage.id === "crawl"
       ? 0
-      : Math.max(0, Math.sin(frame.elapsed * (7 + frame.stage.rhythm * 2)));
-    const intensity = frame.stage.light * (1.15 + flickerAmount * 0.92);
+      : Math.pow(Math.max(0, Math.sin(
+        frame.elapsed * (5.7 + frame.stage.rhythm * 1.3) + Math.sin(frame.elapsed * 0.73) * 1.1,
+      )), 7);
+    const intensity = frame.stage.light * (1.15 + flickerAmount * (0.34 + tension * 0.32));
     const radius = frame.tunnelProfile.diameter / 2;
     const lateral = radius * 0.76;
     const ceiling = 1.68 + radius * 0.72;
