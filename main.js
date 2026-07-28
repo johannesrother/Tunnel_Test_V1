@@ -1,4 +1,4 @@
-import { ExperienceApp } from "./scripts/core/ExperienceApp.js";
+import { ExperienceApp } from "./scripts/core/ExperienceApp.js?rev=calm-natural-20260728";
 
 const canvas = document.querySelector("#experience-canvas");
 const entry = document.querySelector("#entry-gate");
