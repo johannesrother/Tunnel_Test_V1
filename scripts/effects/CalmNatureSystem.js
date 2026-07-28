@@ -110,11 +110,11 @@ export class CalmNatureSystem {
   constructor(scene) {
     this.root = new BABYLON.TransformNode("calm-nature", scene);
     this.moss = buildMossField(scene, this.root);
-    this.grass = buildGrassField(scene, this.root);
-    this.flowers = [
-      buildFlowerInstances(scene, this.root, "calm-yellow-flowers", BABYLON.Color3.FromHexString("#e8c96a"), 1),
-      buildFlowerInstances(scene, this.root, "calm-pale-flowers", BABYLON.Color3.FromHexString("#d9ddd0"), 3),
-    ];
+    // Low-poly blades and spheres read as game props in a headset. Keep the
+    // organic hint limited to nearly flush moss until photographed vegetation
+    // cards are authored for the final installation.
+    this.grass = null;
+    this.flowers = [];
   }
 
   update(frame) {
@@ -129,7 +129,7 @@ export class CalmNatureSystem {
 
     this.moss.mesh.visibility = vitality;
     this.moss.material.alpha = 0.66 * vitality;
-    this.grass.visibility = vitality;
+    if (this.grass) this.grass.visibility = vitality;
     this.flowers.forEach(({ mesh, material }) => {
       mesh.visibility = vitality;
       material.alpha = vitality;
