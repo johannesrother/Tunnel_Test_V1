@@ -298,11 +298,7 @@ export class AudioSystem {
     const now = this.context.currentTime;
     if (frame.isWhiteRoom) {
       this.#enterWhiteRoom(now);
-      return;
-    }
-    if (frame.isWhiteTransition) {
-      Object.values(this.buses).forEach((bus) => bus.gain.setTargetAtTime(0, now, 0.035));
-      this.spatialLoops.forEach(({ gain }) => gain.gain.setTargetAtTime(0, now, 0.035));
+      this.#fadeFlatline(frame.whiteFadeProgress, now);
       return;
     }
 
@@ -338,5 +334,10 @@ export class AudioSystem {
     this.flatlineGain.gain.linearRampToValueAtTime(0.075, now + 0.04);
     this.flatline.connect(this.flatlineGain).connect(this.master);
     this.flatline.start(now);
+  }
+
+  #fadeFlatline(progress, now) {
+    if (!this.flatlineGain) return;
+    this.flatlineGain.gain.setTargetAtTime(0.075 * (1 - progress), now, 0.08);
   }
 }
