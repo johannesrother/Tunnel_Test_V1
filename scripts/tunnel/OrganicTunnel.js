@@ -85,7 +85,7 @@ function buildStrip(name, scene, centerAngle, angularSpan, inset, material) {
  * deliberately irregular spacing, avoiding a modular pipe-like cadence.
  */
 export class OrganicTunnel {
-  constructor(scene, videoWalls) {
+  constructor(scene) {
     this.scene = scene;
     this.root = new BABYLON.TransformNode("organic-tunnel", scene);
     this.root.setEnabled(true);
@@ -95,22 +95,10 @@ export class OrganicTunnel {
     this.ribs = this.#createRibs();
     this.ribs.parent = this.root;
 
-    this.leftDisplay = buildStrip(
-      "left-video-surface", scene, Math.PI, TUNNEL_CONFIG.displayAngularSpan,
-      TUNNEL_CONFIG.displayInset, videoWalls.getMaterial("left"),
-    );
-    this.rightDisplay = buildStrip(
-      "right-video-surface", scene, 0, TUNNEL_CONFIG.displayAngularSpan,
-      TUNNEL_CONFIG.displayInset, videoWalls.getMaterial("right"),
-    );
-    this.leftDisplay.parent = this.root;
-    this.rightDisplay.parent = this.root;
     this.lightRibbons = this.#createLightRibbons();
     this.fadeMeshes = [
       this.shell,
       this.ribs,
-      this.leftDisplay,
-      this.rightDisplay,
       ...this.lightRibbons.meshes,
     ];
   }
