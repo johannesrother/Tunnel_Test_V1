@@ -91,21 +91,12 @@ button:disabled { cursor: wait; opacity: 0.62; }
 #ending {
   z-index: 3;
   pointer-events: none;
-  background: rgba(0, 0, 0, 0);
-  color: rgba(255, 255, 255, 0);
-  transition: background-color 4s ease, color 1.5s ease 450ms;
+  background: #fff;
+  opacity: 0;
 }
 
-#ending p {
-  margin: 0;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: clamp(1.75rem, 6vw, 3.5rem);
-  font-weight: 300;
-  letter-spacing: 0.13em;
-}
-
-#ending.is-visible { background: rgba(0, 0, 0, 0.98); color: rgba(255, 255, 255, 0.96); }
+#ending.is-visible { opacity: 1; }
 
 @media (prefers-reduced-motion: reduce) {
-  #entry-gate, #ending { transition-duration: 0.01ms; }
+  #entry-gate { transition-duration: 0.01ms; }
 }
