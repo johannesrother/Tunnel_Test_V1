@@ -1,5 +1,6 @@
 import { AudioSystem } from "../audio/AudioSystem.js";
 import { AutoRailCamera } from "../camera/AutoRailCamera.js";
+import { CalmNatureSystem } from "../effects/CalmNatureSystem.js";
 import { WhiteRoomPortal } from "../effects/WhiteRoomPortal.js";
 import { LightingSystem } from "../lighting/LightingSystem.js";
 import { ExperienceTimeline } from "../timeline/ExperienceTimeline.js";
@@ -34,6 +35,7 @@ export class ExperienceApp {
     this.camera = new AutoRailCamera(this.scene, this.canvas);
     this.videoWalls = new VideoWallSystem(this.scene);
     this.tunnel = new OrganicTunnel(this.scene, this.videoWalls);
+    this.calmNature = new CalmNatureSystem(this.scene);
     this.whiteRoomPortal = new WhiteRoomPortal(this.scene);
     this.lighting = new LightingSystem(this.scene);
     this.audio = new AudioSystem();
@@ -59,6 +61,7 @@ export class ExperienceApp {
       const frame = this.timeline.getFrame();
       this.camera.update(frame.distance);
       this.tunnel.update(frame);
+      this.calmNature.update(frame);
       this.whiteRoomPortal.update(frame);
       this.videoWalls.update(frame);
       this.lighting.update(frame);
