@@ -21,11 +21,11 @@ Select **BEGIN** once. The browser uses that gesture to permit audio and, where 
 
 | Time | State | Architecture and sound |
 | --- | --- | --- |
-| 0–8 s | Calm | Spring-morning daylight, restrained moss/grass/flowers, warm pad, soft piano, wind and varied distant birds |
-| 8–18 s | Unease | Imperceptible narrowing; daylight, vegetation and bird calls fade continuously while low drone and subtle dissonance emerge |
-| 18–29 s | Compression | Peaceful layer recedes; breath, pulse and harmonic tension grow |
-| 29–40 s | Acceleration | Rail remains steady; only visual and rhythmic density increases |
-| 40–50 s | Peak | Dense 1.9–2.4 m architecture; layered drone, breath and pulse |
+| 0–8 s | Calm | Light limestone, spring daylight, restrained moss/grass/flowers, piano, wind, leaves and varied distant birds |
+| 8–18 s | Unease | Imperceptible narrowing; daylight, vegetation and bird calls fade continuously while the material cools and low drone emerges |
+| 18–29 s | Compression | Peaceful layers recede; slow breathing and flowing surface patterns begin as breath, pulse and harmonic tension grow |
+| 29–40 s | Acceleration | Rail remains steady; irregular surface tension and restrained lighting impulses build visual density |
+| 40–50 s | Peak | Dense 1.9–2.4 m architecture; local-looking contractions, layered drone, breath and pulse reach maximum intensity |
 | 50–55 s | Crawl | Final descent to 1.5 m; exhausted residual textures |
 | 54–55 s | Final pull | The fixed rail resolves into a smooth, powerful one-second acceleration toward the light |
 | 55–58 s | White room | Infinite white clear space; only a clean flatline tone |
@@ -39,11 +39,15 @@ No text, logo, menu, credits, or interface appears after the visitor enters the 
 
 `scripts/tunnel/OrganicTunnel.js` generates a single welded loft, sampled every 1.1 metres from a rounded superellipse profile. Its inner diameter reduces continuously from **3.5 m to 1.5 m** over the entire 55-second tunnel traversal. The profile centre follows the headset eye line, allowing the final 1.5 m diameter to surround the visitor without clipping tracked head movement. Diameter and curvature interpolate smoothly between authored anchors in `scripts/core/config.js`; floor, walls, and ceiling therefore remain one continuous surface with no rectangular modules or visible seams.
 
-The video surfaces and slim practical-light ribbons are separate only because they require different materials. They conform to the same mathematical profile, so they read as integrated architectural insets rather than attached screens. `WhiteRoomPortal` adds two low-cost emissive discs at the final opening: the core is a small, visible white point at the start, grows naturally with forward travel, and expands rapidly during the final pull.
+The video surfaces and slim practical-light ribbons are separate only because they require different materials. They conform to the same mathematical profile, so they read as integrated architectural insets rather than attached screens. The inset ribs use intentionally irregular spacing and only emerge strongly once tension builds, preventing the shell from reading as a fabricated pipe. `WhiteRoomPortal` adds two low-cost emissive discs at the final opening: the core is a small, visible white point at the start, grows naturally with forward travel, and expands rapidly during the final pull.
 
 ### Spring-morning opening
 
 `CalmNatureSystem` dresses only the lower edges of the initial 40 m with a single moss mesh, one grass line system, and two instanced flower meshes. This keeps the structure legible as architecture rather than turning it into a forest, while adding small signs of life at the threshold. `LightingSystem` blends a shadow-free warm directional source, brighter hemispheric fill, and pale atmospheric fog through Calm and then eases it out throughout Unease. The fog is deliberately exponential rather than a full-screen volumetric effect, preserving depth at Quest-friendly cost.
+
+### Living architectural response
+
+`OrganicTunnel` keeps its welded shell static in topology, but adds no-allocation material drift, roughness progression, and a sub-centimetre scale response from the master timeline. Calm is stable; later stages breathe slowly, then introduce infrequent, very small contractions. The visitor's camera never receives this motion. Lighting uses the same tension signal for non-periodic practical-light impulses, so the psychological pressure comes from the space rather than locomotion. This avoids horror clichés and protects headset comfort while making the architecture feel subtly alive.
 
 ### Master timeline
 
@@ -66,7 +70,7 @@ export const VIDEO_SOURCES = Object.freeze({
 
 Place H.264/AAC MP4 files in `assets/videos/`. Keep them short, muted, loopable, and appropriately encoded for mobile hardware. With no files configured, generated placeholder display textures keep the installation immediately runnable.
 
-`AudioSystem` creates an authored procedural score without external files: warm pad, soft piano, flowing air, and irregular multi-note bird phrases initially; then increasingly low drones, breath texture, shaped pulse and filtered air. The bird phrases and the nature bus fade smoothly across Unease and reach silence before Compression begins. Each layer is independently mixed by the master timeline, so the sound changes continuously rather than jumping between scenes. All layers stop instantly at White Room entry; the room contains only a clean 1 kHz flatline tone, which fades to silence from second 58. `addSpatialLoop(url, position)` remains the production hook for authored binaural or spatial loops in `assets/audio/`.
+`AudioSystem` creates an authored procedural score without external files: warm pad, soft piano, flowing air, distant leaf movement, and irregular multi-note bird phrases initially; then increasingly low drones, breath texture, shaped pulse and filtered air. The bird phrases and the nature bus fade smoothly across Unease and reach silence before Compression begins. Each layer is independently mixed by the master timeline, so the sound changes continuously rather than jumping between scenes. All layers stop instantly at White Room entry; the room contains only a clean 1 kHz flatline tone, which fades to silence from second 58. `addSpatialLoop(url, position)` remains the production hook for authored binaural or spatial loops in `assets/audio/`.
 
 ### Quest-oriented rendering budget
 
