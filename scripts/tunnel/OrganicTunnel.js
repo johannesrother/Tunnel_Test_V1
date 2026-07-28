@@ -1,33 +1,12 @@
-import { TUNNEL_CONFIG, TUNNEL_PROFILE_ANCHORS } from "../core/config.js";
-import { lerp, signedPower, smoothstep } from "../utils/math.js";
-
-function profileAt(z) {
-  const last = TUNNEL_PROFILE_ANCHORS.at(-1);
-  if (z >= last.z) return { ...last };
-
-  for (let index = 0; index < TUNNEL_PROFILE_ANCHORS.length - 1; index += 1) {
-    const from = TUNNEL_PROFILE_ANCHORS[index];
-    const to = TUNNEL_PROFILE_ANCHORS[index + 1];
-    if (z <= to.z) {
-      const progress = smoothstep(from.z, to.z, z);
-      return {
-        z,
-        width: lerp(from.width, to.width, progress),
-        height: lerp(from.height, to.height, progress),
-        roundness: lerp(from.roundness, to.roundness, progress),
-      };
-    }
-  }
-  return { ...last };
-}
+import { getTunnelProfileAt, TUNNEL_CONFIG } from "../core/config.js";
+import { signedPower } from "../utils/math.js";
 
 function profilePoint(profile, angle, inset = 0) {
   const exponent = 2 / profile.roundness;
-  const horizontalRadius = profile.width / 2 - inset;
-  const verticalRadius = profile.height / 2 - inset;
+  const radius = profile.diameter / 2 - inset;
   return new BABYLON.Vector3(
-    horizontalRadius * signedPower(Math.cos(angle), exponent),
-    profile.height / 2 + verticalRadius * signedPower(Math.sin(angle), exponent),
+    radius * signedPower(Math.cos(angle), exponent),
+    TUNNEL_CONFIG.eyeLineHeight + radius * signedPower(Math.sin(angle), exponent),
     profile.z,
   );
 }
@@ -89,7 +68,7 @@ function buildStrip(name, scene, centerAngle, angularSpan, inset, material) {
 
   for (let ring = 0; ring < rings; ring += 1) {
     const z = Math.min(ring * TUNNEL_CONFIG.ringSpacing, TUNNEL_CONFIG.length);
-    const profile = profileAt(z);
+    const profile = getTunnelProfileAt(z);
     for (let column = 0; column < across; column += 1) {
       const lateral = column / (across - 1) - 0.5;
       const point = profilePoint(profile, centerAngle + lateral * angularSpan, inset);
@@ -148,6 +127,13 @@ export class OrganicTunnel {
     this.leftDisplay.parent = this.root;
     this.rightDisplay.parent = this.root;
     this.lightRibbons = this.#createLightRibbons();
+    this.fadeMeshes = [
+      this.shell,
+      this.ribs,
+      this.leftDisplay,
+      this.rightDisplay,
+      ...this.lightRibbons.meshes,
+    ];
   }
 
   #createShellMaterial() {
@@ -171,7 +157,7 @@ export class OrganicTunnel {
 
     for (let ring = 0; ring < ringCount; ring += 1) {
       const z = Math.min(ring * TUNNEL_CONFIG.ringSpacing, TUNNEL_CONFIG.length);
-      const profile = profileAt(z);
+      const profile = getTunnelProfileAt(z);
       for (let radial = 0; radial < radialCount; radial += 1) {
         const angle = (radial / radialCount) * Math.PI * 2;
         const point = profilePoint(profile, angle);
@@ -213,8 +199,8 @@ export class OrganicTunnel {
     let vertexOffset = 0;
 
     for (let centerZ = 6; centerZ < TUNNEL_CONFIG.length - 4; centerZ += 6) {
-      const nearProfile = profileAt(centerZ - ribHalfWidth);
-      const farProfile = profileAt(centerZ + ribHalfWidth);
+      const nearProfile = getTunnelProfileAt(centerZ - ribHalfWidth);
+      const farProfile = getTunnelProfileAt(centerZ + ribHalfWidth);
       for (let radial = 0; radial < radialCount; radial += 1) {
         const angle = (radial / radialCount) * Math.PI * 2;
         const near = profilePoint(nearProfile, angle, ribInset);
@@ -270,6 +256,10 @@ export class OrganicTunnel {
       return;
     }
     this.root.setEnabled(true);
+    // The release begins as a physical exit: fog and light dissolve while the
+    // camera is pulled beyond the final ring, then the shell vanishes in white.
+    const visibility = frame.isWhiteTransition ? 1 - frame.whiteTransitionProgress : 1;
+    this.fadeMeshes.forEach((mesh) => { mesh.visibility = visibility; });
     const pulse = Math.max(0, Math.sin(frame.elapsed * (1.1 + frame.stage.rhythm * 4)));
     const intensity = frame.stage.light * (0.16 + pulse * frame.stage.rhythm * 0.34);
     this.lightRibbons.material.emissiveColor.set(
