@@ -268,9 +268,9 @@ export class OrganicTunnel {
       0.44 + morning * 0.20,
       0.33 + morning * 0.12,
     );
-    this.shellMaterial.emissiveColor.set(morning * 0.018, morning * 0.025, morning * 0.01);
+    this.shellMaterial.emissiveColor.set(morning * 0.045, morning * 0.06, morning * 0.022);
     this.ribMaterial.albedoColor.set(0.15 + morning * 0.13, 0.19 + morning * 0.16, 0.12 + morning * 0.09);
-    this.ribMaterial.emissiveColor.set(morning * 0.012, morning * 0.018, morning * 0.006);
+    this.ribMaterial.emissiveColor.set(morning * 0.022, morning * 0.032, morning * 0.01);
     const pulse = Math.max(0, Math.sin(frame.elapsed * (1.1 + frame.stage.rhythm * 4)));
     const intensity = frame.stage.light * (0.16 + pulse * frame.stage.rhythm * 0.34);
     this.lightRibbons.material.emissiveColor.set(
