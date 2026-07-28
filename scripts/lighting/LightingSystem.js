@@ -77,8 +77,13 @@ export class LightingSystem {
     this.scene.fogDensity = frame.stage.fog * (1 - morning * 0.27);
     this.ambient.diffuse.set(0.73 + morning * 0.27, 0.78 + morning * 0.16, 0.60 + morning * 0.20);
     this.ambient.groundColor.set(0.027 + morning * 0.085, 0.063 + morning * 0.10, 0.024 + morning * 0.035);
-    this.ambient.intensity = Math.max(0.05, frame.stage.light * (0.34 + morning * 0.34));
-    this.daylight.intensity = morning * 0.72;
+    this.ambient.intensity = Math.max(0.05, frame.stage.light * (0.34 + morning * 0.58));
+    this.daylight.intensity = morning * 1.18;
+    // Exposure and contrast are score-controlled only for the opening. This
+    // makes the daylight legible through the fog without weakening later dark
+    // stages or adding a post-process pass.
+    this.scene.imageProcessingConfiguration.exposure = 0.9 + morning * 0.24;
+    this.scene.imageProcessingConfiguration.contrast = 1.12 - morning * 0.1;
 
     const flickerAmount = frame.stage.id === "calm" || frame.stage.id === "crawl"
       ? 0
