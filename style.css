@@ -1,0 +1,104 @@
+:root {
+  color-scheme: dark;
+  background: #030405;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #experience-canvas {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+#experience-canvas {
+  display: block;
+  touch-action: none;
+  outline: none;
+}
+
+#entry-gate, #ending {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  text-align: center;
+}
+
+#entry-gate {
+  z-index: 2;
+  padding: 2rem;
+  background: radial-gradient(circle at center, rgba(24, 31, 34, 0.84), #050607 70%);
+  transition: opacity 700ms ease, visibility 700ms ease;
+}
+
+#entry-gate.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.eyebrow {
+  margin: 0 0 1.25rem;
+  color: #aebabe;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+}
+
+h1 {
+  margin: 0;
+  color: #eef2f1;
+  font-size: clamp(2.4rem, 8vw, 4.5rem);
+  font-weight: 400;
+  letter-spacing: 0.03em;
+}
+
+.instruction {
+  max-width: 20rem;
+  margin: 1.25rem 0 2rem;
+  color: #b7c0c2;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+button {
+  min-width: 9.5rem;
+  padding: 0.95rem 1.5rem;
+  border: 1px solid rgba(220, 230, 231, 0.8);
+  border-radius: 0;
+  background: transparent;
+  color: #f2f4f4;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+}
+
+button:hover, button:focus-visible { background: rgba(238, 244, 244, 0.13); }
+button:disabled { cursor: wait; opacity: 0.62; }
+
+#ending {
+  z-index: 3;
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0);
+  color: rgba(255, 255, 255, 0);
+  transition: background-color 4s ease, color 1.5s ease 450ms;
+}
+
+#ending p {
+  margin: 0;
+  font-size: clamp(1.75rem, 6vw, 3.5rem);
+  font-weight: 300;
+  letter-spacing: 0.13em;
+}
+
+#ending.is-visible { background: rgba(0, 0, 0, 0.98); color: rgba(255, 255, 255, 0.96); }
+
+@media (prefers-reduced-motion: reduce) {
+  #entry-gate, #ending { transition-duration: 0.01ms; }
+}
