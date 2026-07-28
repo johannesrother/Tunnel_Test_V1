@@ -39,11 +39,11 @@ No text, logo, menu, credits, or interface appears after the visitor enters the 
 
 `scripts/tunnel/OrganicTunnel.js` generates a single welded loft, sampled every 1.1 metres from a rounded superellipse profile. Its inner diameter reduces continuously from **3.5 m to 1.5 m** over the entire 55-second tunnel traversal. The profile centre follows the headset eye line, allowing the final 1.5 m diameter to surround the visitor without clipping tracked head movement. Diameter and curvature interpolate smoothly between authored anchors in `scripts/core/config.js`; floor, walls, and ceiling therefore remain one continuous surface with no rectangular modules or visible seams.
 
-The video surfaces and slim practical-light ribbons are separate only because they require different materials. They conform to the same mathematical profile, so they read as integrated architectural insets rather than attached screens. The inset ribs use intentionally irregular spacing and only emerge strongly once tension builds, preventing the shell from reading as a fabricated pipe. `WhiteRoomPortal` adds two low-cost emissive discs at the final opening: the core is a small, visible white point at the start, grows naturally with forward travel, and expands rapidly during the final pull.
+There are no display panels or screen surfaces: the tunnel reads as one uninterrupted mineral sculpture. Slim practical-light ribbons follow the same mathematical profile, while the irregular inset ribs only emerge strongly once tension builds, preventing the shell from reading as a fabricated pipe. `WhiteRoomPortal` adds two low-cost emissive discs at the final opening: the core is a small, visible white point at the start, grows naturally with forward travel, and expands rapidly during the final pull.
 
 ### Spring-morning opening
 
-`CalmNatureSystem` dresses only the lower edges of the initial 40 m with a single moss mesh, one grass line system, and two instanced flower meshes. This keeps the structure legible as architecture rather than turning it into a forest, while adding small signs of life at the threshold. `LightingSystem` blends a shadow-free warm directional source, brighter hemispheric fill, and pale atmospheric fog through Calm and then eases it out throughout Unease. The fog is deliberately exponential rather than a full-screen volumetric effect, preserving depth at Quest-friendly cost.
+`CalmNatureSystem` places one project-owned photorealistic limestone/moss material (`assets/textures/calm-nature-limestone-v1.png`) in two almost flush lower-edge insets across the initial 42 m. It provides real pores, moss, lichen, fine grass and rare small wildflowers without using low-poly vegetation props or turning the tunnel into a forest. The insets fade continuously through Unease. `LightingSystem` blends a shadow-free warm directional source, brighter hemispheric fill, and pale atmospheric fog through Calm and then eases it out throughout Unease. The fog is deliberately exponential rather than a full-screen volumetric effect, preserving depth at Quest-friendly cost.
 
 ### Living architectural response
 
@@ -51,30 +51,17 @@ The video surfaces and slim practical-light ribbons are separate only because th
 
 ### Master timeline
 
-`ExperienceTimeline` is the sole clock. Each frame supplies an immutable state containing elapsed time, stage, rail distance, inner profile, portal-pull state, White Room duration, and white-fade progress. The rail advances at a calm fixed 3.0 m/s until second 54. Its fourth-power final term begins with that same incoming velocity, then accelerates continuously into the portal at second 55. Camera movement, portal scale, fog, practical lighting, display brightness, ambience, release, and the silent fade all consume that same state.
+`ExperienceTimeline` is the sole clock. Each frame supplies an immutable state containing elapsed time, stage, rail distance, inner profile, portal-pull state, White Room duration, and white-fade progress. The rail advances at a calm fixed 3.0 m/s until second 54. Its fourth-power final term begins with that same incoming velocity, then accelerates continuously into the portal at second 55. Camera movement, portal scale, fog, practical lighting, ambience, release, and the silent fade all consume that same state.
 
 ### Comfortable automatic locomotion
 
 The camera is parented to a forward-only rig. It advances at a fixed **3.0 m/s** until the final second, then follows the authored continuous pull into the White Room and stops completely. Headset orientation is untouched. Desktop keyboard/gamepad movement, WebXR teleportation, pointer selection, and near interaction are disabled.
 
-### Video and audio replacement
-
-Each wall has one shared material and at most one `VideoTexture`/HTML5 decoder. This is substantially lighter than decoding a video for each apparent panel. Replace the `null` values in `scripts/core/config.js`:
-
-```js
-export const VIDEO_SOURCES = Object.freeze({
-  left: "./assets/videos/left-wall.mp4",
-  right: "./assets/videos/right-wall.mp4",
-});
-```
-
-Place H.264/AAC MP4 files in `assets/videos/`. Keep them short, muted, loopable, and appropriately encoded for mobile hardware. With no files configured, generated placeholder display textures keep the installation immediately runnable.
-
 `AudioSystem` creates an authored procedural score without external files: warm pad, soft piano, flowing air, distant leaf movement, and irregular multi-note bird phrases initially; then increasingly low drones, breath texture, shaped pulse and filtered air. The bird phrases and the nature bus fade smoothly across Unease and reach silence before Compression begins. Each layer is independently mixed by the master timeline, so the sound changes continuously rather than jumping between scenes. All layers stop instantly at White Room entry; the room contains only a clean 1 kHz flatline tone, which fades to silence from second 58. `addSpatialLoop(url, position)` remains the production hook for authored binaural or spatial loops in `assets/audio/`.
 
 ### Quest-oriented rendering budget
 
-The scene uses one shell mesh, two display meshes, two emissive ribbons, and three moving practical lights. The architectural depth effect is produced with exponential fog instead of expensive fullscreen volumetric passes. This keeps draw calls, geometry count, video decoders, and lighting cost suitable for a Meta Quest 3 browser target. Add production textures conservatively and test the actual headset at 72 Hz.
+The scene uses one shell mesh, two photorealistic Calm insets, two emissive ribbons, and three moving practical lights. Removing the display meshes also removes video-decoder and screen-material cost. The architectural depth effect is produced with exponential fog instead of expensive fullscreen volumetric passes. This keeps draw calls, geometry count, and lighting cost suitable for a Meta Quest 3 browser target. Add production textures conservatively and test the actual headset at 72 Hz.
 
 ## Project structure
 
@@ -89,7 +76,7 @@ Tunnel_Test_V3/
 ├── assets/
 │   ├── models/                Reserved for optimized glTF/GLB assets
 │   ├── textures/              Reserved for compressed texture assets
-│   ├── videos/                Optional wall MP4 files
+│   ├── videos/                Reserved for future authored media
 │   ├── audio/                 Optional authored spatial loops
 │   └── hdr/                   Reserved for environment maps
 ├── scripts/
@@ -97,7 +84,7 @@ Tunnel_Test_V3/
 │   ├── tunnel/                Continuous parametric architecture
 │   ├── timeline/              Deterministic 60-second score
 │   ├── lighting/              Practical lights and fog
-│   ├── video/                 Shared video-texture channels
+│   ├── video/                 Reserved video-texture subsystem (inactive)
 │   ├── audio/                 Web Audio and spatial-loop hook
 │   ├── camera/                Forward-only locomotion rig
 │   └── utils/                 Small shared math helpers
@@ -108,7 +95,7 @@ Tunnel_Test_V3/
 
 - Maintain the `TUNNEL_PROFILE_ANCHORS` order and ensure that each successive anchor has a greater `z` value and a smaller diameter.
 - Keep all timing edits in `STAGES`, `TUNNEL_TRAVEL_DURATION_SECONDS`, `FINAL_ACCELERATION_DURATION_SECONDS`, and `WHITE_ROOM_FADE_START_SECONDS`; the total remains exactly 60 seconds.
-- Do not add video textures per repeated surface. Reuse the two wall materials.
+- Keep any future media system separate from the continuous architectural shell.
 - Use KTX2/Basis or low-resolution textures for production assets when possible, and test decoded media memory on the headset.
 - The project uses relative URLs throughout, so it works from a GitHub Pages project URL without configuring a base path.
 
