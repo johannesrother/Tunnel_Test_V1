@@ -1,7 +1,7 @@
 :root {
   color-scheme: dark;
-  background: #030405;
-  font-family: Arial, Helvetica, sans-serif;
+  background: #10170f;
+  font-family: "Courier New", Courier, monospace;
 }
 
 * { box-sizing: border-box; }
@@ -31,7 +31,10 @@ html, body, #experience-canvas {
 #entry-gate {
   z-index: 2;
   padding: 2rem;
-  background: radial-gradient(circle at center, rgba(24, 31, 34, 0.84), #050607 70%);
+  background:
+    radial-gradient(ellipse at 50% 46%, rgba(206, 211, 149, 0.25) 0 3%, rgba(110, 131, 88, 0.14) 17%, transparent 43%),
+    radial-gradient(ellipse at 50% 44%, rgba(28, 44, 26, 0.12), rgba(10, 18, 9, 0.8) 75%),
+    #10170f;
   transition: opacity 700ms ease, visibility 700ms ease;
 }
 
@@ -42,44 +45,47 @@ html, body, #experience-canvas {
 }
 
 .eyebrow {
-  margin: 0 0 1.25rem;
-  color: #aebabe;
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.28em;
+  margin: 0 0 1.1rem;
+  color: #d5d8b0;
+  font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: 0.3em;
 }
 
 h1 {
   margin: 0;
-  color: #eef2f1;
+  color: #edf0d2;
+  font-family: Arial, Helvetica, sans-serif;
   font-size: clamp(2.4rem, 8vw, 4.5rem);
-  font-weight: 400;
-  letter-spacing: 0.03em;
+  font-weight: 300;
+  letter-spacing: 0.05em;
 }
 
 .instruction {
-  max-width: 20rem;
+  max-width: 22rem;
   margin: 1.25rem 0 2rem;
-  color: #b7c0c2;
-  font-size: 0.9rem;
-  line-height: 1.55;
+  color: #c0c79a;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  line-height: 1.7;
 }
 
 button {
-  min-width: 9.5rem;
+  min-width: 16rem;
   padding: 0.95rem 1.5rem;
-  border: 1px solid rgba(220, 230, 231, 0.8);
+  border: 0;
+  border-bottom: 1px solid rgba(220, 215, 143, 0.84);
   border-radius: 0;
   background: transparent;
-  color: #f2f4f4;
+  color: #eff0cf;
   cursor: pointer;
   font: inherit;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.2em;
+  font-size: 0.74rem;
+  font-weight: 400;
+  letter-spacing: 0.22em;
 }
 
-button:hover, button:focus-visible { background: rgba(238, 244, 244, 0.13); }
+button:hover, button:focus-visible { background: rgba(210, 216, 157, 0.11); }
 button:disabled { cursor: wait; opacity: 0.62; }
 
 #ending {
@@ -92,6 +98,7 @@ button:disabled { cursor: wait; opacity: 0.62; }
 
 #ending p {
   margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
   font-size: clamp(1.75rem, 6vw, 3.5rem);
   font-weight: 300;
   letter-spacing: 0.13em;
