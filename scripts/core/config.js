@@ -3,7 +3,9 @@ import { clamp, lerp, smoothstep } from "../utils/math.js";
 /** The authored runtime never drifts beyond this exact sixty-second score. */
 export const EXPERIENCE_DURATION_SECONDS = 60;
 export const TUNNEL_TRAVEL_DURATION_SECONDS = 55;
-export const WHITE_ROOM_SUCTION_DURATION_SECONDS = 0.75;
+export const FINAL_ACCELERATION_DURATION_SECONDS = 1;
+export const FINAL_ACCELERATION_START_SECONDS = TUNNEL_TRAVEL_DURATION_SECONDS - FINAL_ACCELERATION_DURATION_SECONDS;
+export const WHITE_ROOM_FADE_START_SECONDS = 58;
 
 export const STAGES = Object.freeze([
   { id: "calm", label: "CALM", start: 0, end: 8, fog: 0.012, light: 1.0, rhythm: 0.15 },
@@ -16,9 +18,9 @@ export const STAGES = Object.freeze([
 ]);
 
 /**
- * The complete shell is traversed at a constant 3.2 m/s. The eye line is the
- * profile centre, allowing the final 1.5 m diameter to surround the visitor
- * without clipping a tracked headset into the ceiling.
+ * The tunnel holds a calm 3.0 m/s rail speed until its final second. The eye
+ * line is the profile centre, allowing the final 1.5 m diameter to surround
+ * the visitor without clipping a tracked headset into the ceiling.
  */
 export const TUNNEL_CONFIG = Object.freeze({
   length: 176,
@@ -27,7 +29,7 @@ export const TUNNEL_CONFIG = Object.freeze({
   radialSegments: 40,
   displayInset: 0.035,
   displayAngularSpan: 0.34,
-  whiteRoomSuctionDistance: 14,
+  finalAccelerationDistance: 14,
 });
 
 /**
@@ -66,9 +68,23 @@ export function getTunnelProfileAt(distance) {
   return { ...last };
 }
 
-export function getConstantRailDistance(elapsedSeconds) {
-  const travelProgress = clamp(elapsedSeconds / TUNNEL_TRAVEL_DURATION_SECONDS, 0, 1);
-  return TUNNEL_CONFIG.length * travelProgress;
+/**
+ * The first 54 seconds use one calm, fixed velocity. In the final second a
+ * fourth-power term preserves that incoming velocity, then pulls the visitor
+ * into the portal with a decisive but continuous acceleration.
+ */
+export function getTunnelRailDistance(elapsedSeconds) {
+  const elapsed = clamp(elapsedSeconds, 0, TUNNEL_TRAVEL_DURATION_SECONDS);
+  const finalDistance = TUNNEL_CONFIG.finalAccelerationDistance;
+  const steadyDistance = TUNNEL_CONFIG.length - finalDistance;
+  const steadySpeed = steadyDistance / FINAL_ACCELERATION_START_SECONDS;
+  if (elapsed <= FINAL_ACCELERATION_START_SECONDS) return elapsed * steadySpeed;
+
+  const finalProgress = (elapsed - FINAL_ACCELERATION_START_SECONDS) / FINAL_ACCELERATION_DURATION_SECONDS;
+  const matchedVelocityDistance = steadySpeed * FINAL_ACCELERATION_DURATION_SECONDS * finalProgress;
+  const suctionDistance = (finalDistance - steadySpeed * FINAL_ACCELERATION_DURATION_SECONDS)
+    * Math.pow(finalProgress, 4);
+  return steadyDistance + matchedVelocityDistance + suctionDistance;
 }
 
 /**
